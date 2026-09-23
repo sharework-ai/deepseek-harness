@@ -129,7 +129,14 @@ export function apply(ctx: Context): void {
   }
   const handle: ConnectionHandle = {
     api,
-    isLoopback: pageLocation === undefined || isLoopbackHostname(pageLocation.hostname),
+    // Lab deployment: the settings plane is served on the intranet through
+    // nginx22 -> a local hop that rewrites Host/Origin to loopback, which
+    // already satisfies the server-side privileged-method gate. Trust the
+    // deployed hostname so the client settings mirror stays in host mode.
+    isLoopback:
+      pageLocation === undefined ||
+      isLoopbackHostname(pageLocation.hostname) ||
+      pageLocation.hostname === 'dsh.mosipdev.xiongdi.asia',
     hostDescription: {
       getSnapshot: () => description,
       subscribe: (listener) => {
